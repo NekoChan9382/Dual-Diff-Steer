@@ -218,12 +218,14 @@ namespace bit
     };
 } // namespace bit
 
-constexpr int wheel_amount = 4;
 
 int main()
 {
+    constexpr float robot_radius = 0.75;
+    constexpr int wheel_amount = 4;
+
     BufferedSerial pc(USBTX, USBRX, 115200);
-    bit::DiffSteer<wheel_amount> steer(1, PA_11, PA_12);
+    bit::DiffSteer<wheel_amount> steer(robot_radius, PA_11, PA_12);
     CAN esp(PB_12, PB_13, 1e6);
     Amt21 enc[wheel_amount] = {{0x50}, {0x54}, {0x58}, {0x5C}};
     Ps5 ps5;
