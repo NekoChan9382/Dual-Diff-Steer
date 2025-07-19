@@ -253,6 +253,11 @@ int main()
     constexpr float max_trans_vel = 1.0;
     constexpr float max_rot_vel = 1.0;
     printf("\nreset\n");
+    
+    for (auto& e: enc)
+    {
+        e.set_zero_pos();
+    }
     while (1)
     {
         auto now = HighResClock::now();
