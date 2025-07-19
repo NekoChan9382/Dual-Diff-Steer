@@ -171,6 +171,25 @@ namespace bit
             return c620_.write();
         }
 
+        bool reset()
+        {
+            for (int i = 0; i < N * 2; ++i)
+            {
+                c620_.set_output(0, i + 1);
+            }
+            for (int i = 0; i < N * 2; ++i)
+            {
+                pid_rps_[i] = Pid(param_rps_);
+                pid_rps_[i].reset();
+            }
+            for (int i = 0; i < N; ++i)
+            {
+                pid_theta_[i] = Pid(param_theta_);
+                pid_theta_[i].reset();
+            }
+            return c620_.write();
+        }
+
     private:
         void calc_rps(float (&value)[N * 2], const std::array<SteerValue, N> &motor_vel, const float (&theta)[N], const float elapsed)
         {
@@ -244,6 +263,10 @@ int main()
             vel.y = ps5.lstick_y / 128.0 * max_trans_vel;
             vel.ang = ps5.rstick_x / 128.0 * max_rot_vel * -1;
             // printf("%f, %f, %f\n", vel.x, vel.y, vel.ang);
+            if (ps5.circle)
+            {
+                steer.reset();
+            }
         }
         if (now - pre > 10ms)
         {
