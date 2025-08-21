@@ -282,6 +282,7 @@ int main()
     {
         auto now = HighResClock::now();
         static auto pre = now;
+        steer.read_c620();
         if (ps5.read(esp))
         {
             vel.x = ps5.lstick_x / 128.0 * max_trans_vel;
