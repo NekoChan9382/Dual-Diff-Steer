@@ -57,6 +57,16 @@ public:
     std::array<SteerValue, N> calc_vel(const Velocity& vel)
     {
         std::array<SteerValue, N> value;
+        if (vel.x == 0 && vel.y == 0 && vel.ang == 0)
+        {
+            for (int i = 0; i < N; ++i)
+            {
+                constexpr float k = 2 * M_PI / 4;
+                constexpr float ofs = k / 2;
+                value[i] = {0, k * i + ofs};
+            }
+            return value;
+        }
         for (int i = 0; i<N; ++i)
         {
             CoordinatePolar pos = static_cast<CoordinatePolar>(wheel_pos_[i]);
