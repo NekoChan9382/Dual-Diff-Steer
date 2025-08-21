@@ -211,15 +211,17 @@ namespace bit
         }
 
     private:
-        void optimize_steervalue(std::array<SteerValue, N> motor_vel, const float (&theta)[N])
+        void optimize_steervalue(std::array<SteerValue, N> &motor_vel, const float (&theta)[N])
         {
             for (int i = 0; i < N; ++i)
             {
                 // 動径における目標角と現在角の差を求める
                 float diff;
-                float th = motor_vel[i].theta - (theta[i] - int(theta[i]) / (2 * M_PI));
-                th = th < 0 ? th + 2 * M_PI : th;
+                float th = (theta[i] - int(theta[i] / (2 * M_PI)) * 2 * M_PI);
+                th = th < 0 ? motor_vel[i].theta - (th + 2 * M_PI) : motor_vel[i].theta - th;
+                th += th < 0 ? 2 * M_PI : 0;
                 // thの位置する象限を求める
+                printf("th[%d] - goal: %f, now: %f, th: %f, ", i, motor_vel[i].theta, theta[i], th);
                 switch (int(th / (M_PI / 2)))
                 {
                     case 0:
@@ -238,6 +240,7 @@ namespace bit
                         break;
                 }
                 motor_vel[i].theta = theta[i] + diff;
+                printf("opt: %f\n", motor_vel[i].theta);
             }
         }
         void calc_rps(float (&value)[N * 2], const std::array<SteerValue, N> &motor_vel, const float (&theta)[N], const float elapsed)
@@ -272,9 +275,9 @@ namespace bit
             }
         }
 
-        const PidGain gain_rps_ = {0.0008, 0.002, 0.0};
+        const PidGain gain_rps_ = {0.0005, 0.001, 0.0};
         const PidParameter param_rps_ = {gain_rps_, -1, 1};
-        const PidGain gain_theta_ = {3, 0.1, 0.1};
+        const PidGain gain_theta_ = {0.5, 0.00, 0.00};
         const PidParameter param_theta_ = {gain_theta_, -1, 1};
         dji::C620 c620_;
         std::array<Pid, N * 2> pid_rps_;
@@ -346,11 +349,11 @@ int main()
                 constexpr float enc_to_rad = 2 * M_PI / 4096;
                 enc[i].request_pos();
                 theta[i] = enc[i].fixed_pos * enc_to_rad / 5;
-                printf("%f, ", theta[i]);
+                // printf("%f, ", theta[i] * 180 / M_PI);
             }
-            // printf("\n");
-            // steer.set_output(vel, theta, 0.01);
-            printf("%d\n", steer.set_output(vel, theta, 0.01));
+            printf("\n");
+            steer.set_output(vel, theta, 0.01);
+            // printf("%d\n", steer.set_output(vel, theta, 0.01));
             // printf("1\n");
             pre = now;
         }
