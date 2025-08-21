@@ -6,6 +6,7 @@
 #include "C620.hpp"
 #include "mbed.h"
 #include "Rs485.h"
+#include <list>
 
 float duration_to_sec(const std::chrono::duration<float> &duration);
 
@@ -170,6 +171,10 @@ namespace bit
 
             return c620_.write();
         }
+        int read_c620()
+        {
+            return c620_.read_data();
+        }
 
         bool reset()
         {
@@ -254,9 +259,19 @@ int main()
     constexpr float max_rot_vel = 1.0;
     printf("\nreset\n");
     
-    for (auto& e: enc)
+    for (int i = 0; i < wheel_amount; ++i)
     {
         e.set_zero_pos();
+    }
+    std::list<int> queue = {1, 2, 3, 4, 5, 6, 7, 8};
+    while (queue.empty() == 0)
+    {
+        queue.remove(steer.read_c620());
+        for (int val: queue)
+        {
+            printf("%d, ", val);
+        }
+        printf("\n");
     }
     while (1)
     {
