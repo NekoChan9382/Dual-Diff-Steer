@@ -118,6 +118,10 @@ struct Amt21
     {
         zero_pos = pos;
     }
+    void set_zero_pos(int32_t pos)
+    {
+        zero_pos = pos;
+    }
 
     void request_reset()
     {
@@ -247,6 +251,7 @@ int main()
 {
     constexpr float robot_radius = 0.75;
     constexpr int wheel_amount = 4;
+    constexpr int enc_zero_pos[wheel_amount] = {1490, 1590, -1020, 90};
 
     BufferedSerial pc(USBTX, USBRX, 115200);
     bit::DiffSteer<wheel_amount> steer(robot_radius, PA_11, PA_12);
@@ -261,7 +266,7 @@ int main()
     
     for (int i = 0; i < wheel_amount; ++i)
     {
-        e.set_zero_pos();
+        enc[i].set_zero_pos(enc_zero_pos[i]);
     }
     std::list<int> queue = {1, 2, 3, 4, 5, 6, 7, 8};
     while (queue.empty() == 0)
@@ -286,6 +291,10 @@ int main()
             if (ps5.circle)
             {
                 steer.reset();
+                for (auto& e: enc)
+                {
+                    e.set_zero_pos();
+                }
             }
         }
         if (now - pre > 10ms)
