@@ -43,17 +43,17 @@ public:
     }
 
     /// @brief read data from C620
-    bool read_data()
+    int read_data()
     {
         CANMessage msg;
         if (can.read(msg); 0x201 <= msg.id && msg.id <= 0x208)
         {
             data_[msg.id - 0x201].parse(msg.data);
-            return true;
+            return msg.id - 0x200;
         }
         else
         {
-            return false;
+            return 0;
         }
         // printf("rpm: 1: %d, 2: %d, 3: %d, 4: %d\n", data_[0].rpm, data_[1].rpm, data_[2].rpm, data_[3].rpm);
     }
