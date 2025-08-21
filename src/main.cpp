@@ -168,6 +168,7 @@ namespace bit
         bool set_output(const Velocity &vel, const float (&theta)[N], const float elapsed)
         {
             std::array<SteerValue, N> vel_wheel = steer_.calc_vel(vel);
+            optimize_steervalue(vel_wheel, theta);
             float rps[N * 2] = {0};
             calc_rps(rps, vel_wheel, theta, elapsed);
             // printf("\nrps: %f, %f\n", rps[0], rps[1]);
@@ -200,6 +201,35 @@ namespace bit
         }
 
     private:
+        void optimize_steervalue(std::array<SteerValue, N> motor_vel, const float (&theta)[N])
+        {
+            for (int i = 0; i < N; ++i)
+            {
+                // 動径における目標角と現在角の差を求める
+                float diff;
+                float th = motor_vel[i].theta - (theta[i] - int(theta[i]) / (2 * M_PI));
+                th = th < 0 ? th + 2 * M_PI : th;
+                // thの位置する象限を求める
+                switch (int(th / (M_PI / 2)))
+                {
+                    case 0:
+                        diff = th;
+                        break;
+                    case 1:
+                    case 2:
+                        diff = th - M_PI;
+                        motor_vel[i].vel *= -1;
+                        break;
+                    case 3:
+                        diff = th - 2 * M_PI;
+                        break;
+                    default:
+                        diff = th;
+                        break;
+                }
+                motor_vel[i].theta = theta[i] + diff;
+            }
+        }
         void calc_rps(float (&value)[N * 2], const std::array<SteerValue, N> &motor_vel, const float (&theta)[N], const float elapsed)
         {
             for (int i = 0; i < N; ++i)
