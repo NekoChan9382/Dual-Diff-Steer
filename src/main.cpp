@@ -107,8 +107,8 @@ struct Amt21
                 diff += rotate;
             }
             pos += diff;
+            fixed_pos = -(pos - zero_pos);
             pre_pos = now_pos;
-            fixed_pos = pos - zero_pos;
             return true;
         }
         return false;
@@ -206,9 +206,9 @@ namespace bit
             {
                 constexpr int gear_ratio = 19;
                 const float steer_vel = pid_theta_[i].calc(motor_vel[i].theta, theta[i], elapsed) * max_steer_vel_;
-                // printf("steer: %f, %f, %f ", steer_vel, motor_vel[i].theta, theta[i]);
-                value[2 * i] = (motor_vel[i].vel + steer_vel) / wheel_radius_ * gear_ratio;
-                value[2 * i + 1] = -(motor_vel[i].vel - steer_vel) / wheel_radius_ * gear_ratio;
+                // printf("steer[%d]: %f, %f, %f\n", i, steer_vel, motor_vel[i].theta, theta[i]);
+                value[2 * i] = -(motor_vel[i].vel + steer_vel) / wheel_radius_ * gear_ratio;
+                value[2 * i + 1] = (motor_vel[i].vel - steer_vel) / wheel_radius_ * gear_ratio;
             }
         }
         void pid(const float (&goal)[N * 2], const float elapsed)
