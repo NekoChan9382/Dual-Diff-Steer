@@ -224,24 +224,24 @@ namespace bit
                 const float now = c620_.get_rpm(i + 1) * k;
                 // printf("%f\n", now);
                 const float percent = pid_rps_[i].calc(goal[i], now, elapsed);
-                if (i == 0)
+                if (i == i)
                 {
-                    // printf("pwr: %f, %f, %f", now, goal[i], percent);
+                    // printf("pwr[%d]: %f, %f, %f\n", i, now, goal[i], percent);
                 }
                 c620_.set_output_percent(percent, i + 1);
             }
         }
 
-        const PidGain gain_rps_ = {0.002, 0.002, 0.0};
+        const PidGain gain_rps_ = {0.0008, 0.002, 0.0};
         const PidParameter param_rps_ = {gain_rps_, -1, 1};
-        const PidGain gain_theta_ = {5, 0.1, 0.1};
+        const PidGain gain_theta_ = {3, 0.1, 0.1};
         const PidParameter param_theta_ = {gain_theta_, -1, 1};
         dji::C620 c620_;
         std::array<Pid, N * 2> pid_rps_;
         std::array<Pid, N> pid_theta_;
         bit::SteerDrive<N> steer_;
         const int max_motor_pwr_ = 8000;
-        const float max_steer_vel_ = 0.2;
+        const float max_steer_vel_ = 0.6;
         const float wheel_radius_ = 0.05;
     };
 } // namespace bit
