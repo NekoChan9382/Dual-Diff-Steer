@@ -80,14 +80,28 @@ struct Ps5
     }
 };
 
+struct int14_t
+{
+    int value;
+    
+    int14_t()
+    {
+        value = 0;
+    }
+    int14_t(uint16_t val)
+    {
+        value = val >> 13 == 0 ? val & 0x1fff : -((~val & 0x1fff) + 1);
+    }
+};
+
 struct Amt21
 {
     static constexpr int rotate = 4096;
 
     uint8_t address;
     int32_t pos;
+    int14_t turn;
     int32_t fixed_pos;
-    uint16_t pre_pos;
     int32_t zero_pos = 0;
 
     bool request_pos()
@@ -95,21 +109,17 @@ struct Amt21
         rs485.uart_transmit({address});
         if (uint16_t now_pos; rs485.uart_receive(&now_pos, sizeof(now_pos), 500us) && is_valid(now_pos))
         {
-            now_pos = (now_pos & 0x3fff) >> 2;
-            // printf("now_pos: %d\n", now_pos);
-            int16_t diff = now_pos - pre_pos;
-            if (diff > rotate / 2)
+            wait_ns(500);
+            rs485.uart_transmit({uint8_t(address + 1)});
+            wait_ns(500);
+            if (uint16_t now_turn; rs485.uart_receive(&now_turn, sizeof(now_turn), 500us) && is_valid(now_turn))
             {
-                diff -= rotate;
+                now_pos = (now_pos & 0x3fff) >> 2;
+                turn = int14_t(now_turn & 0x3fff);
+                pos = now_pos + turn.value * rotate;
+                fixed_pos = pos - zero_pos;
+                return true;
             }
-            else if (diff < -rotate / 2)
-            {
-                diff += rotate;
-            }
-            pos += diff;
-            fixed_pos = -(pos - zero_pos);
-            pre_pos = now_pos;
-            return true;
         }
         return false;
     }
