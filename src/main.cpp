@@ -102,9 +102,10 @@ struct Amt21
     int32_t pos;
     int14_t turn;
     int32_t fixed_pos;
+    int14_t pre_turn = 0;
     int32_t zero_pos = 0;
 
-    bool request_pos()
+    bool request_pos(bool check = true)
     {
         rs485.uart_transmit({address});
         if (uint16_t now_pos; rs485.uart_receive(&now_pos, sizeof(now_pos), 500us) && is_valid(now_pos))
@@ -117,7 +118,13 @@ struct Amt21
                 now_pos = (now_pos & 0x3fff) >> 2;
                 turn = int14_t(now_turn & 0x3fff);
                 pos = now_pos + turn.value * rotate;
-                fixed_pos = pos - zero_pos;
+                if (abs(turn.value - pre_turn.value) > 100 && check)
+                {
+                    turn = pre_turn;
+                    return false;
+                }
+                pre_turn = turn;
+                fixed_pos = -(pos - zero_pos);
                 return true;
             }
         }
