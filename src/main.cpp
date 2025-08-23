@@ -311,7 +311,27 @@ int main()
     {
         enc[i].set_zero_pos(enc_zero_pos[i]);
     }
-    std::list<int> queue = {1, 2, 3, 4, 5, 6, 7, 8};
+    std::list<int> queue = {0, 1, 2, 3};
+    printf("check if encoder is ok..\n");
+    while (queue.empty() == 0)
+    {
+        for (int i = 0; i < wheel_amount; ++i)
+        {
+            if (enc[i].request_pos(false))
+            {
+                queue.remove(i);
+                enc[i].set_zero_turn();
+            }
+        }
+        for (int val: queue)
+        {
+            printf("%d, ", val);
+        }
+        printf("\n");
+    }
+
+    queue = {1, 2, 3, 4, 5, 6, 7, 8};
+    printf("check if c620 is ok..\n");
     while (queue.empty() == 0)
     {
         queue.remove(steer.read_c620());
